@@ -1,5 +1,4 @@
 auth_enabled: false
-# search_enabled: true
 
 server:
   http_listen_port: 3100
@@ -37,4 +36,27 @@ storage:
       path: /tmp/tempo/blocks
     pool:
       max_workers: 100
-      queue_depth: 10000
+      queue_depth: 1000
+
+# Metrics-generator configuration block
+metrics_generator:
+  processor:
+    service_graphs:
+      wait: 10s
+      max_items: 10000
+      workers: 10
+    span_metrics:
+      enable_target_info: true
+  registry:
+    collection_interval: 10s
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: http://monitoring-prometheus:9090/api/v1/write
+        send_exemplars: true
+  metrics_ingestion_time_range_slack: 30s
+
+overrides:
+  metrics_generator_processors:
+    - service-graphs
+    - span-metrics

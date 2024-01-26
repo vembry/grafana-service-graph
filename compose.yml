@@ -2,7 +2,7 @@ version: "3.7"
 
 
 x-common-env: &common-env
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://monitoring-otel-collector:4317
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
   OTEL_EXPORTER_OTLP_TIMEOUT: 5000
   OTEL_EXPORTER_OTLP_PROTOCOL: grpc
   OTEL_TRACES_SAMPLER: always_on
@@ -57,8 +57,8 @@ services:
       SERVICE_NAME: app-go-2
 
   
-  monitoring-otel-collector:
-    container_name: monitoring-otel-collector
+  otel-collector:
+    container_name: otel-collector
     image: docker.io/otel/opentelemetry-collector
     pull_policy: missing
     command: ["--config", "/etc/otel-config.yml"]
@@ -71,7 +71,12 @@ services:
     container_name: monitoring-tempo
     image: docker.io/grafana/tempo
     pull_policy: missing
-    command: ["-config.file=/etc/tempo.yml"]
+    command: 
+      - "--target=all"
+      - "--storage.trace.backend=local"
+      - "--storage.trace.local.path=/var/tempo"
+      - "--auth.enabled=false"
+      - "--config.file=/etc/tempo.yml"
     ports:
       - 3100:3100
     volumes:
@@ -105,4 +110,4 @@ services:
     ports:
       - "10000:3000"
     volumes:
-      - ./.docker/grafana:/etc/grafana/provisioning
+      - ./.docker/grafana/provisioning:/etc/grafana/provisioning
