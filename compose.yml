@@ -1,0 +1,108 @@
+version: "3.7"
+
+
+x-common-env: &common-env
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://monitoring-otel-collector:4317
+  OTEL_EXPORTER_OTLP_TIMEOUT: 5000
+  OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+  OTEL_TRACES_SAMPLER: always_on
+
+services:
+  app-go:
+    build:
+      context: ./app-go
+    x-develop:
+      watch:
+        - action: rebuild
+          path: ./app-go
+    image: gsg-app-go:local
+    command: /app-go serve
+    ports:
+      - 3000:80
+    environment:
+      <<: *common-env
+      HOST_ADDRESS: :80
+      SERVICE_NAME: app-go
+
+  app-go-1:
+    build:
+      context: ./app-go
+    x-develop:
+      watch:
+        - action: rebuild
+          path: ./app-go
+    image: gsg-app-go:local
+    command: /app-go serve
+    ports:
+      - 3001:80
+    environment:
+      <<: *common-env
+      HOST_ADDRESS: :80
+      SERVICE_NAME: app-go-1
+
+  app-go-2:
+    build:
+      context: ./app-go
+    x-develop:
+      watch:
+        - action: rebuild
+          path: ./app-go
+    image: gsg-app-go:local
+    command: /app-go serve
+    ports:
+      - 3002:80
+    environment:
+      <<: *common-env
+      HOST_ADDRESS: :80
+      SERVICE_NAME: app-go-2
+
+  
+  monitoring-otel-collector:
+    container_name: monitoring-otel-collector
+    image: docker.io/otel/opentelemetry-collector
+    pull_policy: missing
+    command: ["--config", "/etc/otel-config.yml"]
+    ports:
+      - 9002:4317
+    volumes:
+      - ./.docker/grafana/otel-collector.yml:/etc/otel-config.yml
+
+  monitoring-tempo:
+    container_name: monitoring-tempo
+    image: docker.io/grafana/tempo
+    pull_policy: missing
+    command: ["-config.file=/etc/tempo.yml"]
+    ports:
+      - 3100:3100
+    volumes:
+      - ./.docker/grafana/tempo.yml:/etc/tempo.yml
+
+  monitoring-prometheus:
+    container_name: monitoring-prometheus
+    image: docker.io/prom/prometheus
+    pull_policy: missing
+    command:
+      [
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--storage.tsdb.path=/prometheus",
+        "--web.console.libraries=/etc/prometheus/console_libraries",
+        "--web.console.templates=/etc/prometheus/consoles",
+      ]
+    ports:
+      - 9003:9090
+    volumes:
+      - ./.docker/grafana/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: docker.io/grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      GF_LOG_LEVEL: debug
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: true
+    ports:
+      - "10000:3000"
+    volumes:
+      - ./.docker/grafana:/etc/grafana/provisioning

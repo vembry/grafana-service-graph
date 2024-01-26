@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+  otlp:
+    # https://github.com/opentracing-contrib/nginx-opentracing/issues/217
+    endpoint: monitoring-tempo:4317
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      exporters: [ logging, otlp ]
+      processors: [ batch ]
+      receivers: [ otlp ]
