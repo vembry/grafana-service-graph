@@ -30,8 +30,8 @@ func setupLogger() *Logger {
 }
 
 func (l *Logger) InfofC(ctx context.Context, msg string, fields ...interface{}) {
-	l.SugaredLogger.With("trace_id", trace.SpanFromContext(ctx).SpanContext().TraceID().String()).Errorf(msg, fields...)
+	l.SugaredLogger.With("trace_id", trace.SpanFromContext(ctx).SpanContext().TraceID().String()).Infof(msg, fields...)
 }
 func (l *Logger) ErrorfC(ctx context.Context, msg string, fields ...interface{}) {
-	l.SugaredLogger.With("trace_id", trace.SpanFromContext(ctx).SpanContext().TraceID().String()).Infof(msg, fields...)
+	l.SugaredLogger.With("trace_id", trace.SpanFromContext(ctx).SpanContext().TraceID().String()).Errorf(msg, fields...)
 }

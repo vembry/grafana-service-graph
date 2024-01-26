@@ -16,7 +16,7 @@ scrape_configs:
     static_configs:
       - targets: # add service that provides prometheus metrics
           - localhost:9090
-          - monitoring-tempo:3100
-          - app-go
-          - app-go-1
-          - app-go-2
+          # - monitoring-tempo:3100
+          # - app-go
+          # - app-go-1
+          # - app-go-2
