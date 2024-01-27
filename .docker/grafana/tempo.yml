@@ -51,8 +51,6 @@ metrics_generator:
       enable_target_info: true
   registry:
     collection_interval: 5s # Create new metrics every 5s.
-    external_labels:
-      source: tempo # Add a `{source="tempo"}` label.
   storage:
     path: /tmp/tempo/generator/wal
     remote_write:
